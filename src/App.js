@@ -333,7 +333,7 @@ function PostPanel({ onPosted }) {
     if (!form.category) return "Please select a category.";
     if (!form.type) return "Please select a job type.";
     if (!form.email.trim()) return "Contact email is required.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return "Please enter a valid email address.";
+    if (!/^\+?[0-9\s\-()]{7,}$/.test(form.email)) return "Please enter a valid phone number.";
     if (!form.description.trim()) return "Job description is required.";
     return "";
   };
