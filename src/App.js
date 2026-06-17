@@ -224,7 +224,7 @@ function JobCard({ job, onOpen, highlight }) {
         <div className="lh-card-date">{timeAgo(job.created_at)}</div>
         <button className="lh-apply" onClick={(e) => {
           e.stopPropagation();
-          window.location.href = `mailto:${job.email}?subject=${encodeURIComponent("Application for " + job.title + " at " + job.company)}`;
+         window.open(`https://wa.me/${job.email.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("Hi, I'm interested in the " + job.title + " position at " + job.company)}`, "_blank");
         }}>Apply →</button>
       </div>
     </div>
@@ -246,7 +246,7 @@ function JobModal({ job, onClose }) {
         {job.salary && <div className="lh-modal-salary">💰 {job.salary}</div>}
         <div className="lh-modal-desc">{job.description}</div>
         <button className="lh-modal-apply" onClick={() => {
-          window.location.href = `mailto:${job.email}?subject=${encodeURIComponent("Application for " + job.title + " at " + job.company)}`;
+          window.open(`https://wa.me/${job.email.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("Hi, I'm interested in the " + job.title + " position at " + job.company)}`, "_blank");
         }}>Apply for this role →</button>
       </div>
     </div>
