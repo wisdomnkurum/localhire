@@ -403,12 +403,11 @@ function PostPanel({ onPosted }) {
             <label className="lh-label">Pay range <span style={{fontWeight:400,color:"var(--ink3)"}}>(optional)</span></label>
             <input className="lh-input" placeholder="e.g. $18–22/hr or $55k/yr" value={form.salary} onChange={set("salary")} />
           </div>
-          <div className="lh-field">
-            <label className="lh-label">Contact email <span>*</span></label>
-            <input className="lh-input" type="email" placeholder="applications@yourbusiness.com" value={form.email} onChange={set("email")} />
-          </div>
-        </div>
-      </div>
+          <div className="lh-field"
+  <div className="lh-field">
+            <label className="lh-label">WhatsApp number <span>*</span></label>
+            <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={form.email} onChange={set("email")} />
+            </div>
       <div className="lh-form-section">
         <div className="lh-form-section-label">Description</div>
         <div className="lh-field">
