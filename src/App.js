@@ -201,7 +201,8 @@ body{
   font-family:'Archivo', sans-serif;font-size:.88rem;color:var(--ink);background:var(--paper);
   outline:none;
 }
-.lh-input:focus{ box-shadow:3px 3px 0 var(--mustard); }
+.lh-input:focus{ box-shadow:3px 3px 0 var(--mustard); outline:3px solid var(--mustard); outline-offset:2px; }
+.lh-tab:focus-visible, .lh-apply:focus-visible, .lh-submit:focus-visible, .lh-select:focus-visible { outline:3px solid var(--mustard); outline-offset:2px; }
 .lh-search-input{padding-left:38px;}
 .lh-select{
   padding:11px 14px;border:2px solid var(--ink);border-radius:4px;
