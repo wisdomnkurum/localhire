@@ -405,9 +405,10 @@ function PostPanel({ onPosted }) {
           </div>
           <div className="lh-field"
   <div className="lh-field">
-            <label className="lh-label">WhatsApp number <span>*</span></label>
-            <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={form.email} onChange={set("email")} />
-            </div>
+  <label className="lh-label">WhatsApp number <span>*</span></label>
+  <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={form.email} onChange={set("email")} />
+  <span className="lh-hint">Make sure this number has WhatsApp active — applicants will message you there.</span>
+</div>
       <div className="lh-form-section">
         <div className="lh-form-section-label">Description</div>
         <div className="lh-field">
