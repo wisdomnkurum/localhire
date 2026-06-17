@@ -202,6 +202,7 @@ body{
   outline:none;
 }
 .lh-input:focus{ box-shadow:3px 3px 0 var(--mustard); outline:3px solid var(--mustard); outline-offset:2px; }
+.lh-input-error{ border-color:var(--red) !important; box-shadow:3px 3px 0 var(--red) !important; }
 .lh-tab:focus-visible, .lh-apply:focus-visible, .lh-submit:focus-visible, .lh-select:focus-visible { outline:3px solid var(--mustard); outline-offset:2px; }
 .lh-search-input{padding-left:38px;}
 .lh-select{
@@ -436,7 +437,6 @@ function BrowsePanel({ jobs, loading, error, onSwitchToPost, onOpen, highlightId
         <div className="lh-stat"><div className="lh-stat-num">{fullTime}</div><div className="lh-stat-label">Full-Time</div></div>
         <div className="lh-stat"><div className="lh-stat-num">{partTime}</div><div className="lh-stat-label">Part-Time</div></div>
       </div>
-
       <div className="lh-search-bar">
         <div className="lh-search-wrap">
           <span className="lh-search-icon"><SearchIcon /></span>
@@ -483,26 +483,24 @@ function PostPanel({ onPosted }) {
   const blank = { title:"", company:"", category:"", type:"", salary:"", email:"", description:"" };
   const [form, setForm] = useState(blank);
   const [error, setError] = useState("");
+  const [errorField, setErrorField] = useState("");
   const [loading, setLoading] = useState(false);
-
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-
+  const fieldClass = (name) => `lh-input${errorField === name ? " lh-input-error" : ""}`;
   const validate = () => {
-    if (!form.title.trim()) return "Job title is required.";
-    if (!form.company.trim()) return "Company name is required.";
-    if (!form.category) return "Please select a category.";
-    if (!form.type) return "Please select a job type.";
-    if (!form.email.trim()) return "WhatsApp number is required.";
-    if (!/^\+?[0-9\s\-()]{7,}$/.test(form.email)) return "Please enter a valid phone number.";
-    if (!form.description.trim()) return "Job description is required.";
-    return "";
-  };
-
-  const submit = async () => {
-    const err = validate();
-    if (err) { setError(err); return; }
-    setError("");
-    setLoading(true);
+  if (!form.title.trim()) return { msg: "Job title is required.", field: "title" };
+  if (!form.company.trim()) return { msg: "Company name is required.", field: "company" };
+  if (!form.category) return { msg: "Please select a category.", field: "category" };
+  if (!form.type) return { msg: "Please select a job type.", field: "type" };
+  if (!form.email.trim()) return { msg: "WhatsApp number is required.", field: "email" };
+  if (!/^\+?[0-9\s\-()]{7,}$/.test(form.email)) return { msg: "Please enter a valid phone number.", field: "email" };
+  if (!form.description.trim()) return { msg: "Job description is required.", field: "description" };
+  return null;
+};
+  const err = validate();
+if (err) { setError(err.msg); setErrorField(err.field); return; }
+setError("");
+setErrorField("");
     try {
       const job = await db.insertJob({
         title: form.title.trim(),
@@ -534,11 +532,11 @@ function PostPanel({ onPosted }) {
         <div className="lh-form-grid">
           <div className="lh-field">
             <label className="lh-label">Job title <span>*</span></label>
-            <input className="lh-input" placeholder="e.g. Barista, Electricianâ€¦" value={form.title} onChange={set("title")} />
+            <input className={fieldClass("title")} placeholder="e.g. Barista, Electrician…" value={form.title} onChange={set("title")} />
           </div>
           <div className="lh-field">
             <label className="lh-label">Company name <span>*</span></label>
-            <input className="lh-input" placeholder="Your business name" value={form.company} onChange={set("company")} />
+            <input className={fieldClass("company")} placeholder="Your business name" value={form.company} onChange={set("company")} />
           </div>
           <div className="lh-field">
             <label className="lh-label">Category <span>*</span></label>
@@ -549,7 +547,7 @@ function PostPanel({ onPosted }) {
           </div>
           <div className="lh-field">
             <label className="lh-label">Job type <span>*</span></label>
-            <select className="lh-select" style={{width:"100%"}} value={form.type} onChange={set("type")}>
+            <select className={fieldClass("type")} style={{width:"100%"}} value={form.type} onChange={set("type")}>
               <option value="">Select type</option>
               {JOB_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
@@ -565,7 +563,7 @@ function PostPanel({ onPosted }) {
           </div>
           <div className="lh-field">
             <label className="lh-label">WhatsApp number <span>*</span></label>
-            <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={form.email} onChange={set("email")} />
+            <input className={fieldClass("email")} type="tel" placeholder="e.g. +234 801 234 5678" value={form.email} onChange={set("email")} />
             <span className="lh-hint">Make sure this number has WhatsApp active â€” applicants will message you there.</span>
           </div>
         </div>
@@ -574,7 +572,7 @@ function PostPanel({ onPosted }) {
         <div className="lh-form-section-label">Description</div>
         <div className="lh-field">
           <label className="lh-label">Tell candidates about the role <span>*</span></label>
-          <textarea className="lh-input" placeholder="Describe responsibilities, requirements, and what makes this a great opportunityâ€¦" value={form.description} onChange={set("description")} />
+          <textarea className={fieldClass("description")} placeholder="Describe responsibilities, requirements, and what makes this a great opportunity…" value={form.description} onChange={set("description")} />
         </div>
       </div>
       {error && <div className="lh-error">{error}</div>}
@@ -658,5 +656,5 @@ export default function App() {
       </div>
       {modal && <JobModal job={modal} onClose={() => setModal(null)} />}
     </>
-  );
-    }  
+  
+    } 
