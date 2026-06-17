@@ -347,8 +347,7 @@ function PostPanel({ onPosted }) {
       const job = await db.insertJob({
         title: form.title.trim(),
         company: form.company.trim(),
-        category,
-        : form.category,
+        category: form.category,
         type: form.type,
         salary: form.salary.trim() || null,
         email: form.email.trim(),
