@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-// ── Supabase config ───────────────────────────────────────────────────────────
+// â”€â”€ Supabase config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SUPABASE_URL = "https://usdkknqyusgjqusvqarq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzZGtrbnF5dXNnanF1c3ZxYXJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0ODcyMTIsImV4cCI6MjA5NzA2MzIxMn0.UlbT0rIILkEJVfOXM_MpkrjoKLmwVznjzyv8iX3Mo8g";
 
@@ -30,7 +30,7 @@ const db = {
   },
 };
 
-// ── helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function timeAgo(dateStr) {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
   if (diff < 60) return "just now";
@@ -39,164 +39,310 @@ function timeAgo(dateStr) {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
+// deterministic "random" rotation per card based on id, so it doesn't jitter on re-render
+function pinRotation(id) {
+  const str = String(id);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) % 1000;
+  return ((hash % 50) / 10) - 2.5; // -2.5deg to +2.5deg
+}
+function pinColor(id) {
+  const colors = ["#C8402C", "#D4A017", "#1A1611", "#7C8B6F"];
+  const str = String(id);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) % 1000;
+  return colors[hash % colors.length];
+}
+
 const CATEGORIES = [
   "Retail & Sales","Food & Hospitality","Healthcare",
   "Trades & Labor","Admin & Office","Education","Technology","Other",
 ];
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"];
 
-// ── styles ────────────────────────────────────────────────────────────────────
+// â”€â”€ styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --ink:#0F172A;--ink2:#475569;--ink3:#94A3B8;
-  --teal:#0D9488;--teal-d:#0F766E;--teal-l:#F0FDFA;
-  --amber-l:#FFFBEB;--green:#10B981;--green-l:#ECFDF5;
-  --red:#DC2626;--red-l:#FEF2F2;
-  --bg:#F8FAFC;--white:#FFFFFF;--border:#E2E8F0;
-  --shadow:0 1px 3px rgba(0,0,0,.07);
-  --shadow-md:0 4px 16px rgba(0,0,0,.08);
+  --paper:#FAF6EE;
+  --paper-dark:#F0E9D8;
+  --ink:#1A1611;
+  --ink-soft:#4A433A;
+  --red:#C8402C;
+  --red-d:#A8341F;
+  --mustard:#D4A017;
+  --mustard-l:#FBF0D2;
+  --sage:#7C8B6F;
+  --sage-l:#EBEFE6;
+  --line:#D8CFB8;
+  --shadow-pin: 0 3px 0 rgba(26,22,17,0.08), 0 8px 16px rgba(26,22,17,0.12);
 }
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+body{
+  font-family:'Archivo',sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  min-height:100vh;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(26,22,17,0.02) 0%, transparent 8%),
+    radial-gradient(circle at 80% 70%, rgba(26,22,17,0.02) 0%, transparent 8%);
+}
 
+.lh-display{ font-family:'Archivo Black', sans-serif; }
+.lh-mono{ font-family:'JetBrains Mono', monospace; }
+
+/* NAV â€” like a shop sign */
 .lh-nav{
   position:sticky;top:0;z-index:200;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 28px;height:58px;
-  background:var(--white);border-bottom:1px solid var(--border);
-  box-shadow:var(--shadow);
+  padding:14px 22px;
+  background:var(--ink);
+  border-bottom:4px solid var(--red);
 }
-.lh-logo{font-size:1.25rem;font-weight:800;letter-spacing:-0.5px;color:var(--teal);}
-.lh-logo span{color:var(--ink);}
-.lh-badge{font-family:'DM Mono',monospace;font-size:.72rem;background:var(--teal-l);color:var(--teal-d);border:1px solid #99F6E4;padding:3px 10px;border-radius:100px;}
+.lh-logo{
+  font-family:'Archivo Black', sans-serif;
+  font-size:1.15rem;
+  color:var(--paper);
+  letter-spacing:-0.3px;
+  text-transform:uppercase;
+}
+.lh-logo span{ color:var(--mustard); }
+.lh-badge{
+  font-family:'JetBrains Mono', monospace;
+  font-size:.7rem;
+  background:var(--red);
+  color:var(--paper);
+  padding:5px 11px;
+  border-radius:3px;
+  font-weight:600;
+  letter-spacing:.02em;
+}
 
+/* HERO â€” torn paper notice */
 .lh-hero{
-  background:var(--ink);padding:60px 24px 0;
-  text-align:center;overflow:hidden;position:relative;
+  background:var(--paper-dark);
+  padding:46px 20px 38px;
+  text-align:center;
+  position:relative;
+  border-bottom:1px dashed var(--line);
 }
-.lh-hero::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(13,148,136,.25) 0%,transparent 70%);
-  pointer-events:none;
+.lh-hero-eye{
+  font-family:'JetBrains Mono', monospace;
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--red);
+  margin-bottom:14px;
+  display:inline-block;
+  border-top:2px solid var(--red);
+  border-bottom:2px solid var(--red);
+  padding:4px 0;
 }
-.lh-hero-eye{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:18px;}
-.lh-hero h1{font-size:clamp(2.2rem,5.5vw,3.4rem);font-weight:800;letter-spacing:-1.5px;line-height:1.08;color:var(--white);margin-bottom:18px;}
-.lh-hero h1 em{font-style:normal;color:var(--teal);}
-.lh-hero-sub{font-size:1rem;color:rgba(255,255,255,.6);max-width:420px;margin:0 auto 30px;line-height:1.65;}
+.lh-hero h1{
+  font-family:'Archivo Black', sans-serif;
+  font-size:clamp(2rem,7vw,3.1rem);
+  line-height:1.05;
+  letter-spacing:-1px;
+  color:var(--ink);
+  margin-bottom:14px;
+  text-transform:uppercase;
+}
+.lh-hero h1 em{
+  font-style:normal;
+  color:var(--red);
+  background:none;
+  position:relative;
+}
+.lh-hero-sub{
+  font-size:.98rem;
+  color:var(--ink-soft);
+  max-width:380px;
+  margin:0 auto 26px;
+  line-height:1.6;
+}
 .lh-counter{
-  display:inline-flex;align-items:center;gap:10px;
-  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
-  border-radius:100px;padding:9px 22px;
-  font-size:.88rem;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:36px;
+  display:inline-flex;align-items:center;gap:9px;
+  background:var(--paper);
+  border:2px solid var(--ink);
+  border-radius:100px;
+  padding:8px 20px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:.82rem;font-weight:600;color:var(--ink);
+  margin-bottom:28px;
+  box-shadow:3px 3px 0 var(--ink);
 }
-.lh-live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.3);animation:livepulse 2s infinite;}
-@keyframes livepulse{0%,100%{box-shadow:0 0 0 3px rgba(16,185,129,.3);}50%{box-shadow:0 0 0 6px rgba(16,185,129,.08);}}
+.lh-live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1.6s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
 
-.lh-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.1);max-width:500px;margin:0 auto;position:relative;}
-.lh-tab{flex:1;padding:13px 0;background:none;border:none;font-family:inherit;font-size:.88rem;font-weight:600;color:rgba(255,255,255,.45);cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;margin-bottom:-1px;}
-.lh-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
-.lh-tab:not(.active):hover{color:rgba(255,255,255,.75);}
+.lh-tabs{display:flex;gap:10px;max-width:420px;margin:0 auto;}
+.lh-tab{
+  flex:1;padding:11px 0;
+  background:var(--paper);border:2px solid var(--ink);
+  font-family:'Archivo', sans-serif;font-size:.85rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.02em;
+  color:var(--ink);cursor:pointer;
+  transition:transform .12s, background .12s;
+}
+.lh-tab.active{ background:var(--ink); color:var(--paper); }
+.lh-tab:active{ transform:translateY(1px); }
 
-.lh-main{max-width:880px;margin:0 auto;padding:32px 20px 80px;}
+/* MAIN */
+.lh-main{max-width:880px;margin:0 auto;padding:30px 18px 80px;}
 
-.lh-search-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
-.lh-search-wrap{flex:1;min-width:220px;position:relative;}
-.lh-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink3);pointer-events:none;display:flex;align-items:center;}
-.lh-input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.88rem;color:var(--ink);background:var(--white);transition:border-color .15s,box-shadow .15s;outline:none;}
-.lh-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12);}
+/* SEARCH */
+.lh-search-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.lh-search-wrap{flex:1;min-width:200px;position:relative;}
+.lh-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-soft);pointer-events:none;display:flex;}
+.lh-input{
+  width:100%;padding:11px 14px;
+  border:2px solid var(--ink);border-radius:4px;
+  font-family:'Archivo', sans-serif;font-size:.88rem;color:var(--ink);background:var(--paper);
+  outline:none;
+}
+.lh-input:focus{ box-shadow:3px 3px 0 var(--mustard); }
 .lh-search-input{padding-left:38px;}
-.lh-select{padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.88rem;color:var(--ink);background:var(--white);cursor:pointer;outline:none;transition:border-color .15s,box-shadow .15s;}
-.lh-select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12);}
+.lh-select{
+  padding:11px 14px;border:2px solid var(--ink);border-radius:4px;
+  font-family:'Archivo', sans-serif;font-size:.85rem;color:var(--ink);background:var(--paper);
+  cursor:pointer;outline:none;
+}
 
-.lh-filter-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px;flex-wrap:wrap;}
-.lh-results-count{font-size:.82rem;color:var(--ink2);}
-.lh-results-count strong{color:var(--ink);font-weight:700;}
+.lh-filter-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:8px;flex-wrap:wrap;}
+.lh-results-count{font-family:'JetBrains Mono', monospace;font-size:.78rem;color:var(--ink-soft);}
+.lh-results-count strong{color:var(--ink);}
+.lh-refresh{background:none;border:none;color:var(--red);font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Archivo',sans-serif;text-transform:uppercase;letter-spacing:.02em;}
 
-.lh-jobs{display:flex;flex-direction:column;gap:10px;}
-.lh-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:22px 24px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;transition:border-color .15s,box-shadow .15s,transform .15s;cursor:default;}
-.lh-card:hover{border-color:var(--teal);box-shadow:var(--shadow-md);transform:translateY(-1px);}
-.lh-card.lh-card-new{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12),var(--shadow-md);animation:cardIn .4s cubic-bezier(.34,1.56,.64,1);}
-@keyframes cardIn{from{opacity:0;transform:translateY(-10px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
-.lh-card-title{font-size:1.05rem;font-weight:700;margin-bottom:4px;color:var(--ink);}
-.lh-card-company{font-size:.85rem;font-weight:600;color:var(--teal);margin-bottom:12px;}
+/* STATS â€” like stamped receipt */
+.lh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:30px;border:2px solid var(--ink);border-radius:4px;overflow:hidden;}
+.lh-stat{background:var(--paper);padding:16px 10px;text-align:center;border-right:2px solid var(--ink);}
+.lh-stat:last-child{border-right:none;}
+.lh-stat-num{font-family:'Archivo Black', sans-serif;font-size:1.5rem;color:var(--red);line-height:1;}
+.lh-stat-label{font-family:'JetBrains Mono', monospace;font-size:.65rem;color:var(--ink-soft);margin-top:4px;text-transform:uppercase;letter-spacing:.04em;}
+
+/* PINBOARD GRID */
+.lh-jobs{ display:grid; grid-template-columns:1fr; gap:26px; padding-top:6px; }
+@media(min-width:560px){ .lh-jobs{ grid-template-columns:1fr 1fr; } }
+
+.lh-card{
+  background:#FFFDF8;
+  border:1px solid var(--line);
+  padding:20px 20px 18px;
+  position:relative;
+  box-shadow:var(--shadow-pin);
+  transition:transform .18s ease;
+}
+.lh-card::before{
+  content:'';
+  position:absolute;
+  top:-9px; left:50%;
+  transform:translateX(-50%);
+  width:16px;height:16px;
+  border-radius:50%;
+  background: var(--pin-color, var(--red));
+  box-shadow: 0 2px 3px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.4);
+  z-index:2;
+}
+.lh-card:hover{ transform:translateY(-3px) rotate(0deg) !important; }
+.lh-card.lh-card-new{
+  animation:pinIn .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pinIn{
+  from{ opacity:0; transform:translateY(-16px) scale(.9) !important; }
+  to{ opacity:1; }
+}
+
+.lh-card-title{ font-family:'Archivo Black', sans-serif; font-size:1.05rem; color:var(--ink); margin-bottom:3px; line-height:1.2; }
+.lh-card-company{ font-family:'JetBrains Mono', monospace; font-size:.78rem; color:var(--red); margin-bottom:12px; font-weight:600; }
 .lh-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-.lh-tag{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:100px;letter-spacing:.02em;}
-.lh-tag-type{background:var(--teal-l);color:var(--teal-d);}
-.lh-tag-cat{background:var(--amber-l);color:#92400E;}
-.lh-tag-new{background:var(--green-l);color:#065F46;}
-.lh-card-desc{font-size:.84rem;color:var(--ink2);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.lh-card-right{text-align:right;flex-shrink:0;}
-.lh-card-salary{font-size:.9rem;font-weight:700;color:var(--ink);margin-bottom:3px;}
-.lh-card-date{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--ink3);margin-bottom:14px;}
-.lh-apply{padding:8px 16px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .15s;}
-.lh-apply:hover{background:var(--teal-d);}
+.lh-tag{ font-family:'Archivo',sans-serif; font-size:.68rem; font-weight:700; padding:3px 9px; text-transform:uppercase; letter-spacing:.03em; }
+.lh-tag-type{ background:var(--sage-l); color:#3F4A36; border:1px solid var(--sage); }
+.lh-tag-cat{ background:var(--mustard-l); color:#7A5A0C; border:1px solid var(--mustard); }
+.lh-tag-new{ background:var(--red); color:var(--paper); border:1px solid var(--red); }
+.lh-card-desc{ font-size:.85rem; color:var(--ink-soft); line-height:1.6; margin-bottom:14px; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
 
-.lh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
-.lh-stat{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
-.lh-stat-num{font-size:1.6rem;font-weight:800;letter-spacing:-1px;color:var(--teal);}
-.lh-stat-label{font-size:.75rem;font-weight:600;color:var(--ink3);margin-top:2px;}
+.lh-card-bottom{ display:flex; align-items:center; justify-content:space-between; border-top:1px dashed var(--line); padding-top:12px; }
+.lh-card-salary{ font-family:'JetBrains Mono', monospace; font-size:.85rem; font-weight:700; color:var(--ink); }
+.lh-card-date{ font-family:'JetBrains Mono', monospace; font-size:.68rem; color:var(--ink-soft); }
+.lh-apply{
+  padding:8px 16px;background:var(--ink);color:var(--paper);
+  border:none;font-family:'Archivo',sans-serif;font-size:.78rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.02em;
+  cursor:pointer;transition:background .15s;
+}
+.lh-apply:hover{ background:var(--red); }
 
-.lh-empty{text-align:center;padding:72px 24px;color:var(--ink3);}
-.lh-empty-icon{font-size:2.8rem;margin-bottom:14px;}
-.lh-empty h3{font-size:1rem;font-weight:700;color:var(--ink2);margin-bottom:6px;}
+/* EMPTY */
+.lh-empty{text-align:center;padding:70px 24px;color:var(--ink-soft);}
+.lh-empty-icon{font-size:2.6rem;margin-bottom:14px;}
+.lh-empty h3{font-family:'Archivo Black',sans-serif;font-size:1.1rem;color:var(--ink);margin-bottom:6px;text-transform:uppercase;}
 .lh-empty p{font-size:.85rem;}
-.lh-empty-cta{display:inline-block;margin-top:20px;padding:10px 22px;background:var(--teal);color:#fff;border:none;border-radius:9px;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;transition:background .15s;}
-.lh-empty-cta:hover{background:var(--teal-d);}
+.lh-empty-cta{display:inline-block;margin-top:18px;padding:11px 22px;background:var(--red);color:var(--paper);border:none;font-family:'Archivo',sans-serif;font-size:.85rem;font-weight:700;text-transform:uppercase;cursor:pointer;}
 
-.lh-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:72px 24px;gap:16px;color:var(--ink3);}
-.lh-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;}
+.lh-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 24px;gap:14px;color:var(--ink-soft);}
+.lh-spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.lh-loading p{font-size:.88rem;font-weight:500;}
 
-.lh-form-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:36px 40px;box-shadow:var(--shadow);}
-.lh-form-head{margin-bottom:28px;}
-.lh-form-head h2{font-size:1.3rem;font-weight:800;letter-spacing:-.3px;margin-bottom:6px;}
-.lh-form-head p{font-size:.85rem;color:var(--ink2);line-height:1.6;}
-.lh-form-section{border-top:1px solid var(--border);padding-top:22px;margin-top:22px;}
-.lh-form-section-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:16px;}
-.lh-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+/* FORM */
+.lh-form-card{ background:#FFFDF8; border:2px solid var(--ink); padding:30px 26px; box-shadow:5px 5px 0 var(--mustard); }
+.lh-form-head{margin-bottom:24px;}
+.lh-form-head h2{font-family:'Archivo Black',sans-serif;font-size:1.25rem;text-transform:uppercase;margin-bottom:6px;}
+.lh-form-head p{font-size:.85rem;color:var(--ink-soft);line-height:1.6;}
+.lh-form-section{border-top:1px dashed var(--line);padding-top:20px;margin-top:20px;}
+.lh-form-section-label{ font-family:'JetBrains Mono',monospace; font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin-bottom:14px;}
+.lh-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .lh-form-grid .full{grid-column:1/-1;}
 .lh-field{display:flex;flex-direction:column;gap:5px;}
-.lh-label{font-size:.8rem;font-weight:600;color:var(--ink);}
+.lh-label{font-size:.8rem;font-weight:700;color:var(--ink);}
 .lh-label span{color:var(--red);}
-textarea.lh-input{resize:vertical;min-height:110px;line-height:1.6;}
-.lh-error{margin-top:16px;padding:11px 16px;background:var(--red-l);border:1px solid #FCA5A5;border-radius:9px;font-size:.84rem;color:var(--red);font-weight:600;}
-.lh-submit{margin-top:24px;width:100%;padding:14px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:800;cursor:pointer;transition:background .15s,opacity .15s;}
-.lh-submit:hover{background:var(--teal-d);}
+.lh-hint{font-size:.72rem;color:var(--ink-soft);margin-top:2px;}
+textarea.lh-input{resize:vertical;min-height:100px;line-height:1.6;}
+
+.lh-error{margin-top:14px;padding:10px 14px;background:#FBE4DF;border:1px solid var(--red);font-size:.82rem;color:var(--red-d);font-weight:600;}
+.lh-submit{
+  margin-top:22px;width:100%;padding:14px;
+  background:var(--red);color:var(--paper);border:none;
+  font-family:'Archivo Black',sans-serif;font-size:.9rem;text-transform:uppercase;letter-spacing:.02em;
+  cursor:pointer;transition:background .15s;box-shadow:3px 3px 0 var(--ink);
+}
+.lh-submit:hover{background:var(--red-d);}
 .lh-submit:disabled{opacity:.6;cursor:not-allowed;}
 
-.lh-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:13px 24px;border-radius:12px;font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.22);transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;pointer-events:none;}
+/* TOAST */
+.lh-toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--ink);color:var(--paper);padding:13px 22px;
+  font-family:'Archivo',sans-serif;font-size:.85rem;font-weight:700;
+  display:flex;align-items:center;gap:9px;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  z-index:999;white-space:nowrap;pointer-events:none;
+}
 .lh-toast.show{transform:translateX(-50%) translateY(0);}
-.lh-toast-check{color:var(--green);font-size:1.1rem;}
+.lh-toast-check{color:var(--mustard);}
 
-.lh-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s;}
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-.lh-modal{background:var(--white);border-radius:18px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;padding:36px;box-shadow:0 24px 64px rgba(0,0,0,.18);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1);}
-@keyframes modalIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
-.lh-modal-close{float:right;background:none;border:none;font-size:1.4rem;color:var(--ink3);cursor:pointer;line-height:1;margin-top:-4px;transition:color .15s;}
-.lh-modal-close:hover{color:var(--ink);}
-.lh-modal-title{font-size:1.4rem;font-weight:800;letter-spacing:-.5px;margin-bottom:4px;}
-.lh-modal-company{font-size:.95rem;font-weight:600;color:var(--teal);margin-bottom:16px;}
-.lh-modal-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
-.lh-modal-salary{font-family:'DM Mono',monospace;font-size:.85rem;color:var(--ink);margin-bottom:20px;}
-.lh-modal-desc{font-size:.9rem;color:var(--ink2);line-height:1.75;white-space:pre-wrap;}
-.lh-modal-apply{display:block;width:100%;margin-top:28px;padding:14px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:800;cursor:pointer;text-align:center;transition:background .15s;}
-.lh-modal-apply:hover{background:var(--teal-d);}
+/* MODAL */
+.lh-overlay{position:fixed;inset:0;background:rgba(26,22,17,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;}
+.lh-modal{background:#FFFDF8;border:2px solid var(--ink);max-width:540px;width:100%;max-height:90vh;overflow-y:auto;padding:32px;box-shadow:6px 6px 0 var(--red);}
+.lh-modal-close{float:right;background:none;border:2px solid var(--ink);width:30px;height:30px;font-size:1.1rem;cursor:pointer;line-height:1;margin-top:-4px;}
+.lh-modal-title{font-family:'Archivo Black',sans-serif;font-size:1.3rem;text-transform:uppercase;margin-bottom:4px;}
+.lh-modal-company{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--red);margin-bottom:14px;font-weight:600;}
+ .lh-modal-meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
+.lh-modal-salary{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--ink);margin-bottom:18px;font-weight:700;}
+.lh-modal-desc{font-size:.9rem;color:var(--ink-soft);line-height:1.7;white-space:pre-wrap;}
+.lh-modal-apply{display:block;width:100%;margin-top:24px;padding:14px;background:var(--red);color:var(--paper);border:none;font-family:'Archivo Black',sans-serif;font-size:.9rem;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 var(--ink);}
+.lh-modal-apply:hover{background:var(--red-d);}
 
 @media(max-width:640px){
   .lh-form-grid{grid-template-columns:1fr;}
   .lh-form-grid .full{grid-column:1;}
-  .lh-form-card{padding:24px 20px;}
-  .lh-card{grid-template-columns:1fr;}
-  .lh-card-right{text-align:left;}
-  .lh-stats{grid-template-columns:1fr 1fr;}
-  .lh-stats .lh-stat:last-child{grid-column:1/-1;}
-  .lh-modal{padding:24px 20px;}
+  .lh-form-card{padding:22px 18px;}
+  .lh-modal{padding:22px 18px;}
 }
 `;
 
-// ── components ────────────────────────────────────────────────────────────────
+// â”€â”€ components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SearchIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
@@ -205,27 +351,40 @@ function SearchIcon() {
   );
 }
 
+function waLink(phone, title, company) {
+  const digits = (phone || "").replace(/[^0-9]/g, "");
+  const msg = encodeURIComponent(`Hi, I'm interested in the ${title} position at ${company}`);
+  return `https://wa.me/${digits}?text=${msg}`;
+}
+
 function JobCard({ job, onOpen, highlight }) {
   const isRecent = (new Date() - new Date(job.created_at)) < 24 * 60 * 60 * 1000;
+  const rotation = pinRotation(job.id);
+  const color = pinColor(job.id);
   return (
-    <div className={`lh-card${highlight ? " lh-card-new" : ""}`} id={`jc-${job.id}`} onClick={() => onOpen(job)}>
-      <div>
-        <div className="lh-card-title">{job.title}</div>
-        <div className="lh-card-company">{job.company}</div>
-        <div className="lh-tags">
-          <span className="lh-tag lh-tag-type">{job.type}</span>
-          <span className="lh-tag lh-tag-cat">{job.category}</span>
-          {isRecent && <span className="lh-tag lh-tag-new">New</span>}
-        </div>
-        <div className="lh-card-desc">{job.description}</div>
+    <div
+      className={`lh-card${highlight ? " lh-card-new" : ""}`}
+      id={`jc-${job.id}`}
+      style={{ transform: `rotate(${rotation}deg)`, "--pin-color": color }}
+      onClick={() => onOpen(job)}
+    >
+      <div className="lh-card-title">{job.title}</div>
+      <div className="lh-card-company">{job.company}</div>
+      <div className="lh-tags">
+        <span className="lh-tag lh-tag-type">{job.type}</span>
+        <span className="lh-tag lh-tag-cat">{job.category}</span>
+        {isRecent && <span className="lh-tag lh-tag-new">New</span>}
       </div>
-      <div className="lh-card-right">
-        <div className="lh-card-salary">{job.salary || "Pay unlisted"}</div>
-        <div className="lh-card-date">{timeAgo(job.created_at)}</div>
+      <div className="lh-card-desc">{job.description}</div>
+      <div className="lh-card-bottom">
+        <div>
+          <div className="lh-card-salary">{job.salary || "Pay unlisted"}</div>
+          <div className="lh-card-date">{timeAgo(job.created_at)}</div>
+        </div>
         <button className="lh-apply" onClick={(e) => {
           e.stopPropagation();
-         window.open(`https://wa.me/${job.email.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("Hi, I'm interested in the " + job.title + " position at " + job.company)}`, "_blank");
-        }}>Apply →</button>
+          window.open(waLink(job.email, job.title, job.company), "_blank");
+        }}>Apply</button>
       </div>
     </div>
   );
@@ -236,18 +395,18 @@ function JobModal({ job, onClose }) {
   return (
     <div className="lh-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="lh-modal">
-        <button className="lh-modal-close" onClick={onClose}>×</button>
+        <button className="lh-modal-close" onClick={onClose}>Ã—</button>
         <div className="lh-modal-title">{job.title}</div>
         <div className="lh-modal-company">{job.company}</div>
         <div className="lh-modal-meta">
           <span className="lh-tag lh-tag-type">{job.type}</span>
           <span className="lh-tag lh-tag-cat">{job.category}</span>
         </div>
-        {job.salary && <div className="lh-modal-salary">💰 {job.salary}</div>}
+        {job.salary && <div className="lh-modal-salary">{job.salary}</div>}
         <div className="lh-modal-desc">{job.description}</div>
         <button className="lh-modal-apply" onClick={() => {
-          window.open(`https://wa.me/${job.email.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("Hi, I'm interested in the " + job.title + " position at " + job.company)}`, "_blank");
-        }}>Apply for this role →</button>
+          window.open(waLink(job.email, job.title, job.company), "_blank");
+        }}>Message on WhatsApp</button>
       </div>
     </div>
   );
@@ -272,15 +431,15 @@ function BrowsePanel({ jobs, loading, error, onSwitchToPost, onOpen, highlightId
   return (
     <div>
       <div className="lh-stats">
-        <div className="lh-stat"><div className="lh-stat-num">{jobs.length}</div><div className="lh-stat-label">Active listings</div></div>
-        <div className="lh-stat"><div className="lh-stat-num">{fullTime}</div><div className="lh-stat-label">Full-time roles</div></div>
-        <div className="lh-stat"><div className="lh-stat-num">{partTime}</div><div className="lh-stat-label">Part-time roles</div></div>
+        <div className="lh-stat"><div className="lh-stat-num">{jobs.length}</div><div className="lh-stat-label">Listings</div></div>
+        <div className="lh-stat"><div className="lh-stat-num">{fullTime}</div><div className="lh-stat-label">Full-Time</div></div>
+        <div className="lh-stat"><div className="lh-stat-num">{partTime}</div><div className="lh-stat-label">Part-Time</div></div>
       </div>
 
       <div className="lh-search-bar">
         <div className="lh-search-wrap">
           <span className="lh-search-icon"><SearchIcon /></span>
-          <input className="lh-input lh-search-input" placeholder="Search by title, company, or keyword…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="lh-input lh-search-input" placeholder="Search title, company, keywordâ€¦" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <select className="lh-select" value={cat} onChange={(e) => setCat(e.target.value)}>
           <option value="">All categories</option>
@@ -294,20 +453,20 @@ function BrowsePanel({ jobs, loading, error, onSwitchToPost, onOpen, highlightId
 
       <div className="lh-filter-row">
         <div className="lh-results-count">
-          {!loading && filtered.length > 0 && <>Showing <strong>{filtered.length}</strong> of <strong>{jobs.length}</strong> job{jobs.length !== 1 ? "s" : ""}</>}
+          {!loading && filtered.length > 0 && <>SHOWING <strong>{filtered.length}</strong> OF <strong>{jobs.length}</strong></>}
         </div>
-        <button onClick={onRefresh} style={{background:"none",border:"none",color:"var(--teal)",fontSize:".8rem",fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>↻ Refresh</button>
+        <button className="lh-refresh" onClick={onRefresh}>â†» Refresh</button>
       </div>
 
       {loading ? (
-        <div className="lh-loading"><div className="lh-spinner" /><p>Loading jobs…</p></div>
+        <div className="lh-loading"><div className="lh-spinner" /><p>Loading jobsâ€¦</p></div>
       ) : error ? (
-        <div className="lh-empty"><div className="lh-empty-icon">⚠️</div><h3>Couldn't load jobs</h3><p>{error}</p><button className="lh-empty-cta" onClick={onRefresh}>Try again</button></div>
+        <div className="lh-empty"><div className="lh-empty-icon">âš </div><h3>Couldn't load jobs</h3><p>{error}</p><button className="lh-empty-cta" onClick={onRefresh}>Try again</button></div>
       ) : filtered.length === 0 ? (
         <div className="lh-empty">
-          <div className="lh-empty-icon">{jobs.length === 0 ? "📋" : "🔍"}</div>
-          <h3>{jobs.length === 0 ? "No jobs yet" : "No matches found"}</h3>
-          <p>{jobs.length === 0 ? "Be the first to post a job listing." : "Try clearing your filters."}</p>
+          <div className="lh-empty-icon">ðŸ“Œ</div>
+          <h3>{jobs.length === 0 ? "Board's empty" : "No matches"}</h3>
+          <p>{jobs.length === 0 ? "Be the first to pin a job." : "Try clearing your filters."}</p>
           {jobs.length === 0 && <button className="lh-empty-cta" onClick={onSwitchToPost}>Post the first job</button>}
         </div>
       ) : (
@@ -332,7 +491,7 @@ function PostPanel({ onPosted }) {
     if (!form.company.trim()) return "Company name is required.";
     if (!form.category) return "Please select a category.";
     if (!form.type) return "Please select a job type.";
-    if (!form.email.trim()) return "Contact email is required.";
+    if (!form.email.trim()) return "WhatsApp number is required.";
     if (!/^\+?[0-9\s\-()]{7,}$/.test(form.email)) return "Please enter a valid phone number.";
     if (!form.description.trim()) return "Job description is required.";
     return "";
@@ -366,15 +525,15 @@ function PostPanel({ onPosted }) {
   return (
     <div className="lh-form-card">
       <div className="lh-form-head">
-        <h2>Post a job listing</h2>
-        <p>Your listing goes live immediately and is visible to all job seekers on this board.</p>
+        <h2>Pin a job to the board</h2>
+        <p>Your listing goes live immediately and is visible to everyone browsing.</p>
       </div>
       <div className="lh-form-section">
         <div className="lh-form-section-label">Role details</div>
         <div className="lh-form-grid">
           <div className="lh-field">
             <label className="lh-label">Job title <span>*</span></label>
-            <input className="lh-input" placeholder="e.g. Barista, Electrician…" value={form.title} onChange={set("title")} />
+            <input className="lh-input" placeholder="e.g. Barista, Electricianâ€¦" value={form.title} onChange={set("title")} />
           </div>
           <div className="lh-field">
             <label className="lh-label">Company name <span>*</span></label>
@@ -397,34 +556,35 @@ function PostPanel({ onPosted }) {
         </div>
       </div>
       <div className="lh-form-section">
-        <div className="lh-form-section-label">Compensation & contact</div>
+        <div className="lh-form-section-label">Pay & contact</div>
         <div className="lh-form-grid">
           <div className="lh-field">
-            <label className="lh-label">Pay range <span style={{fontWeight:400,color:"var(--ink3)"}}>(optional)</span></label>
-            <input className="lh-input" placeholder="e.g. $18–22/hr or $55k/yr" value={form.salary} onChange={set("salary")} />
+            <label className="lh-label">Pay range <span style={{fontWeight:400,color:"var(--ink-soft)"}}>(optional)</span></label>
+            <input className="lh-input" placeholder="e.g. $18â€“22/hr or $55k/yr" value={form.salary} onChange={set("salary")} />
           </div>
-          <div className="lh-field"
-  <div className="lh-field">
-  <label className="lh-label">WhatsApp number <span>*</span></label>
-  <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={form.email} onChange={set("email")} />
-  <span className="lh-hint">Make sure this number has WhatsApp active — applicants will message you there.</span>
-</div>
+          <div className="lh-field">
+            <label className="lh-label">WhatsApp number <span>*</span></label>
+            <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={form.email} onChange={set("email")} />
+            <span className="lh-hint">Make sure this number has WhatsApp active â€” applicants will message you there.</span>
+          </div>
+        </div>
+      </div>
       <div className="lh-form-section">
         <div className="lh-form-section-label">Description</div>
         <div className="lh-field">
           <label className="lh-label">Tell candidates about the role <span>*</span></label>
-          <textarea className="lh-input" placeholder="Describe responsibilities, requirements, and what makes this a great opportunity…" value={form.description} onChange={set("description")} />
+          <textarea className="lh-input" placeholder="Describe responsibilities, requirements, and what makes this a great opportunityâ€¦" value={form.description} onChange={set("description")} />
         </div>
       </div>
       {error && <div className="lh-error">{error}</div>}
       <button className="lh-submit" onClick={submit} disabled={loading}>
-        {loading ? "Posting…" : "Post this job →"}
+        {loading ? "Postingâ€¦" : "Pin this job â†’"}
       </button>
     </div>
   );
 }
 
-// ── app ───────────────────────────────────────────────────────────────────────
+// â”€â”€ app â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function App() {
   const [tab, setTab] = useState("browse");
   const [jobs, setJobs] = useState([]);
@@ -458,7 +618,7 @@ export default function App() {
     setJobs((prev) => [job, ...prev]);
     setHighlightId(job.id);
     setTab("browse");
-    showToast(`"${job.title}" is now live`);
+    showToast(`"${job.title}" is now pinned`);
     setTimeout(() => {
       const el = document.getElementById(`jc-${job.id}`);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -471,18 +631,18 @@ export default function App() {
       <style>{css}</style>
       <nav className="lh-nav">
         <div className="lh-logo">Local<span>Hire</span></div>
-        <div className="lh-badge">{jobs.length} live</div>
+        <div className="lh-badge">{jobs.length} LIVE</div>
       </nav>
       <section className="lh-hero">
         <div className="lh-hero-eye">Community Job Board</div>
-        <h1>Find work.<br /><em>Hire locally.</em></h1>
-        <p className="lh-hero-sub">A direct line between local employers and job seekers — no middlemen, no fees.</p>
+        <h1>Find work.<br /><em>Hire local.</em></h1>
+        <p className="lh-hero-sub">A direct line between local employers and job seekers â€” no middlemen, no fees.</p>
         <div className="lh-counter">
           <span className="lh-live-dot" />
-          <span>{jobs.length} job{jobs.length !== 1 ? "s" : ""} posted in your area</span>
+          <span>{jobs.length} job{jobs.length !== 1 ? "s" : ""} posted nearby</span>
         </div>
         <div className="lh-tabs">
-          <button className={`lh-tab${tab === "browse" ? " active" : ""}`} onClick={() => setTab("browse")}>Browse Jobs</button>
+          <button className={`lh-tab${tab === "browse" ? " active" : ""}`} onClick={() => setTab("browse")}>Browse</button>
           <button className={`lh-tab${tab === "post" ? " active" : ""}`} onClick={() => setTab("post")}>Post a Job</button>
         </div>
       </section>
@@ -492,10 +652,10 @@ export default function App() {
           : <PostPanel onPosted={handlePosted} />}
       </main>
       <div className={`lh-toast${toast.show ? " show" : ""}`}>
-        <span className="lh-toast-check">✓</span>
+        <span className="lh-toast-check">ðŸ“Œ</span>
         <span>{toast.msg}</span>
       </div>
       {modal && <JobModal job={modal} onClose={() => setModal(null)} />}
     </>
   );
-    }
+    }  
