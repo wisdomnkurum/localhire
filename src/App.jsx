@@ -497,7 +497,8 @@ function PostPanel({ onPosted }) {
   if (!form.description.trim()) return { msg: "Job description is required.", field: "description" };
   return null;
 };
-  const err = validate();
+  const handleSubmit = async () => {
+    const err = validate();
 if (err) { setError(err.msg); setErrorField(err.field); return; }
 setError("");
 setErrorField("");
