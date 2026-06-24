@@ -657,5 +657,6 @@ export default function App() {
         <span>{toast.msg}</span>
       </div>
       {modal && <JobModal job={modal} onClose={() => setModal(null)} />}
-    </>
-   }
+      </>
+     );
+  }
