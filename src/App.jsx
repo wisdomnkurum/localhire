@@ -502,7 +502,7 @@ const handleSubmit = async () => {
        if (err) { setError(err.msg); setErrorField(err.field); return; }
        setError("");
        setErrorField("");
-       try {Fix handleSubmit async function
+       try {
       const job = await db.insertJob({
         title: form.title.trim(),
         company: form.company.trim(),
