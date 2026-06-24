@@ -497,11 +497,11 @@ function PostPanel({ onPosted }) {
   if (!form.description.trim()) return { msg: "Job description is required.", field: "description" };
   return null;
 };
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
     const err = validate();
-if (err) { setError(err.msg); setErrorField(err.field); return; }
-setError("");
-setErrorField("");
+    if (err) { setError(err.msg); setErrorField(err.field); return; }
+    setError("");
+    setErrorField("");
     try {
       const job = await db.insertJob({
         title: form.title.trim(),
