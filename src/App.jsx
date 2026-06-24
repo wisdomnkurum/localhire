@@ -496,31 +496,32 @@ function PostPanel({ onPosted }) {
   if (!/^\+?[0-9\s\-()]{7,}$/.test(form.email)) return { msg: "Please enter a valid phone number.", field: "email" };
   if (!form.description.trim()) return { msg: "Job description is required.", field: "description" };
   return null;
-};
-const handleSubmit = async () => {
-      const err = validate();
-       if (err) { setError(err.msg); setErrorField(err.field); return; }
-       setError("");
-       setErrorField("");
-       try {
-const job = await db.insertJob({
-        title: form.title.trim(),
-        company: form.company.trim(),
-        category: form.category,
-        type: form.type,
-        salary: form.salary.trim() || null,
-        email: form.email.trim(),
-        description: form.description.trim(),
-        is_new: true,
-      });
-      setForm(blank);
-      onPosted(job);
-    } catch (e) {
-      setError("Failed to post job. Please check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
   };
+  const handleSubmit = async () => {
+    const err = validate();
+     if (err) { setError(err.msg); setErrorField(err.field); return; }
+     setError("");
+     setErrorField("");
+     setLoading(true);
+     try {
+       const job = await db.insertJob({
+         title: form.title.trim(),
+         company: form.company.trim(),
+         category: form.category,
+         type: form.type,
+         salary: form.salary.trim() || null,
+         email: form.email.trim(),
+         description: form.description.trim(),
+         is_new: true,
+       });
+       setForm(blank);
+       onPosted(job);
+     } catch (e) {
+       setError("Failed to post job. Please check your connection and try again.");
+     } finally {
+       setLoading(false);
+     }
+     };
 
   return (
     <div className="lh-form-card">
@@ -658,4 +659,3 @@ export default function App() {
       {modal && <JobModal job={modal} onClose={() => setModal(null)} />}
     </>
    }
-   } 
