@@ -498,11 +498,11 @@ function PostPanel({ onPosted }) {
   return null;
 };
 const handleSubmit = async () => {
-    const err = validate();
-    if (err) { setError(err.msg); setErrorField(err.field); return; }
-    setError("");
-    setErrorField("");
-    try {
+      const err = validate();
+       if (err) { setError(err.msg); setErrorField(err.field); return; }
+       setError("");
+       setErrorField("");
+       try {Fix handleSubmit async function
       const job = await db.insertJob({
         title: form.title.trim(),
         company: form.company.trim(),
