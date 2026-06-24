@@ -657,5 +657,5 @@ export default function App() {
       </div>
       {modal && <JobModal job={modal} onClose={() => setModal(null)} />}
     </>
-  
-    } 
+   }
+   } 
