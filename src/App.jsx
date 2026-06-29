@@ -578,7 +578,7 @@ function PostPanel({ onPosted }) {
         </div>
       </div>
       {error && <div className="lh-error">{error}</div>}
-      <button className="lh-submit" onClick={handlesubmit} disabled={loading}>
+      <button className="lh-submit" onClick={handleSubmit} disabled={loading}>
         {loading ? "Postingâ€¦" : "Pin this job â†’"}
       </button>
     </div>
