@@ -594,6 +594,7 @@ export default function App() {
   const [highlightId, setHighlightId] = useState(null);
   const [toast, setToast] = useState({ show: false, msg: "" });
   const [modal, setModal] = useState(null);
+  const isAdmin = window.location.search.includes("key=Nkurumwisdom4800marvelou$");
 
   const loadJobs = useCallback(async () => {
     setLoading(true);
@@ -630,6 +631,19 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
+      {isAdmin && (
+          <div style={{background:"#1A1611",color:"#FAF6EE",padding:"20px",fontFamily:"monospace"}}>
+             <h2 style={{color:"#D4A017",marginBottom:"16px"}}>📊 Admin Dashboard</h2>
+             <p>Total Jobs: <strong>{jobs.length}</strong></p>
+             <p>Full-time: <strong>{jobs.filter(j=>j.type==="Full-time").length}</strong></p>
+             <p>Part-time: <strong>{jobs.filter(j=>j.type==="Part-time").length}</strong></p>
+             <p>Posted today: <strong>{jobs.filter(j=>new Date(j.created_at).toDateString()===new Date().toDateString()).length}</strong></p>
+             <hr style={{margin:"16px 0",borderColor:"#4A433A"}}/>
+             <h3 style={{color:"#D4A017",marginBottom:"10px"}}>Recent Listings</h3>
+             {jobs.slice(0,5).map(j=><div key={j.id} style={{marginBottom:"8px",padding:"8px",background:"#2A2218"}}><strong>{j.title}</strong> — {j.company} ({j.type})</div>)}
+          </div>
+      )}
+      )}
       <nav className="lh-nav">
         <div className="lh-logo">Local<span>Hire</span></div>
         <div className="lh-badge">{jobs.length} LIVE</div>
