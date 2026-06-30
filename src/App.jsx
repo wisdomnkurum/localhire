@@ -643,7 +643,7 @@ export default function App() {
              {jobs.slice(0,5).map(j=><div key={j.id} style={{marginBottom:"8px",padding:"8px",background:"#2A2218"}}><strong>{j.title}</strong> — {j.company} ({j.type})</div>)}
           </div>
       )}
-      )}
+       
       <nav className="lh-nav">
         <div className="lh-logo">Local<span>Hire</span></div>
         <div className="lh-badge">{jobs.length} LIVE</div>
