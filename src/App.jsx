@@ -353,6 +353,49 @@ function SearchIcon() {
   );
 }
 
+async function saveApplication(jobId, jobTitle, phone) {
+    try {
+        await fetch(`${SUPABASE_URL}/rest/v1/applications`, {
+              method: "POST",
+                    headers: {
+                            apikey: SUPABASE_KEY,
+                                    Authorization: `Bearer ${SUPABASE_KEY}`,
+                                            "Content-Type": "application/json",
+                                                  },
+                                                        body: JSON.stringify({ job_id: jobId, job_title: jobTitle, applicant_phone: phone }),
+                                                            });
+                              } catch (e) {
+                 console.error("Failed to save application", e);
+                   }
+                                                       }
+
+                     function ApplyModal({ job, onClose }) {
+                            const [phone, setPhone] = useState("");
+                     const [error, setError] = useState("");
+
+                    const handleApply = async () => {
+                     if (!/^\+?[0-9\s\-()]{7,}$/.test(phone)) 
+                     setError("Please enter a valid phone number.");
+                      return;
+                      }
+                     await saveApplication(job.id, job.title, phone);
+                     window.open(waLink(job.email, job.title, job.company), "_blank");
+                     onClose();
+                     };
+
+                     return (
+                   <div className="lh-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+                   <div className="lh-modal">
+                   <button className="lh-modal-close" onClick={onClose}>×</button>
+                  <div className="lh-modal-title">Apply to {job.title}</div>
+                  <p style={{margin:"10px 0",color:"var(--ink-soft)",fontSize:".85rem"}}>Enter your WhatsApp number so the employer can reach you.</p>
+                  <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                 {error && <div className="lh-error">{error}</div>      
+                                                                           <button className="lh-modal-apply" onClick={handleApply}>Continue to WhatsApp</button>
+                                                                                                                                                                              </div>
+     </div>
+     )                                                                  }
+}
 function waLink(phone, title, company) {
   const digits = (phone || "").replace(/[^0-9]/g, "");
   const msg = encodeURIComponent(`Hi, I'm interested in the ${title} position at ${company}`);
@@ -384,15 +427,15 @@ function JobCard({ job, onOpen, highlight }) {
           <div className="lh-card-date">{timeAgo(job.created_at)}</div>
         </div>
         <button className="lh-apply" onClick={(e) => {
-          e.stopPropagation();
-          window.open(waLink(job.email, job.title, job.company), "_blank");
-        }}>Apply</button>
+            e.stopPropagation();
+              onOpen(job, true);
+              }}>Apply</button>
       </div>
     </div>
   );
 }
 
-function JobModal({ job, onClose }) {
+function JobModal({ job, onClose, onApply }) {}
   if (!job) return null;
   return (
     <div className="lh-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -407,8 +450,10 @@ function JobModal({ job, onClose }) {
         {job.salary && <div className="lh-modal-salary">{job.salary}</div>}
         <div className="lh-modal-desc">{job.description}</div>
         <button className="lh-modal-apply" onClick={() => {
-          window.open(waLink(job.email, job.title, job.company), "_blank");
-        }}>Message on WhatsApp</button>
+            onClose();
+              onApply(job);
+              }}>Message on WhatsApp</button>
+        }}
       </div>
     </div>
   );
@@ -594,6 +639,7 @@ export default function App() {
   const [highlightId, setHighlightId] = useState(null);
   const [toast, setToast] = useState({ show: false, msg: "" });
   const [modal, setModal] = useState(null);
+  const [applyJob, setApplyJob] = useState(null);
   const isAdmin = window.location.search.includes("key=Nkurumwisdom4800marvelou$");
 
   const loadJobs = useCallback(async () => {
@@ -643,7 +689,7 @@ export default function App() {
              {jobs.slice(0,5).map(j=><div key={j.id} style={{marginBottom:"8px",padding:"8px",background:"#2A2218"}}><strong>{j.title}</strong> — {j.company} ({j.type})</div>)}
           </div>
       )}
-       
+
       <nav className="lh-nav">
         <div className="lh-logo">Local<span>Hire</span></div>
         <div className="lh-badge">{jobs.length} LIVE</div>
@@ -663,14 +709,15 @@ export default function App() {
       </section>
       <main className="lh-main">
         {tab === "browse"
-          ? <BrowsePanel jobs={jobs} loading={loading} error={error} onSwitchToPost={() => setTab("post")} onOpen={setModal} highlightId={highlightId} onRefresh={loadJobs} />
+          ? <BrowsePanel jobs={jobs} loading={loading} error={error} onSwitchToPost={() => setTab("post")} onOpen={(job, apply) => apply ? setApplyJob(job) : setModal(job)} highlightId={highlightId} onRefresh={loadJobs} />
           : <PostPanel onPosted={handlePosted} />}
       </main>
       <div className={`lh-toast${toast.show ? " show" : ""}`}>
         <span className="lh-toast-check">ðŸ“Œ</span>
         <span>{toast.msg}</span>
       </div>
-      {modal && <JobModal job={modal} onClose={() => setModal(null)} />}
+      {modal && <JobModal job={modal} onClose={() => setModal(null)} onApply={(j) => setApplyJob(j)} />}
+        {applyJob && <ApplyModal job={applyJob} onClose={() => setApplyJob(null)} />}
       </>
      );
   }
