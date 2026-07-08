@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-// â”€â”€ Supabase config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ Supabase config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const SUPABASE_URL = "https://usdkknqyusgjqusvqarq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzZGtrbnF5dXNnanF1c3ZxYXJxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0ODcyMTIsImV4cCI6MjA5NzA2MzIxMn0.UlbT0rIILkEJVfOXM_MpkrjoKLmwVznjzyv8iX3Mo8g";
 
@@ -30,7 +30,7 @@ const db = {
   },
 };
 
-// â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function timeAgo(dateStr) {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
   if (diff < 60) return "just now";
@@ -39,12 +39,11 @@ function timeAgo(dateStr) {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-// deterministic "random" rotation per card based on id, so it doesn't jitter on re-render
 function pinRotation(id) {
   const str = String(id);
   let hash = 0;
   for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) % 1000;
-  return ((hash % 50) / 10) - 2.5; // -2.5deg to +2.5deg
+  return ((hash % 50) / 10) - 2.5;
 }
 function pinColor(id) {
   const colors = ["#C8402C", "#D4A017", "#1A1611", "#7C8B6F"];
@@ -60,7 +59,7 @@ const CATEGORIES = [
 ];
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"];
 
-// â”€â”€ styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
 
@@ -78,8 +77,8 @@ const css = `
   --sage-l:#EBEFE6;
   --line:#D8CFB8;
   --shadow-pin: 0 3px 0 rgba(26,22,17,0.08), 0 8px 16px rgba(26,22,17,0.12);
-}
-body{
+                           }
+  body{
   font-family:'Archivo',sans-serif;
   background:var(--paper);
   color:var(--ink);
@@ -92,7 +91,6 @@ body{
 .lh-display{ font-family:'Archivo Black', sans-serif; }
 .lh-mono{ font-family:'JetBrains Mono', monospace; }
 
-/* NAV â€” like a shop sign */
 .lh-nav{
   position:sticky;top:0;z-index:200;
   display:flex;align-items:center;justify-content:space-between;
@@ -119,7 +117,6 @@ body{
   letter-spacing:.02em;
 }
 
-/* HERO â€” torn paper notice */
 .lh-hero{
   background:var(--paper-dark);
   padding:46px 20px 38px;
@@ -188,10 +185,8 @@ body{
 .lh-tab.active{ background:var(--ink); color:var(--paper); }
 .lh-tab:active{ transform:translateY(1px); }
 
-/* MAIN */
 .lh-main{max-width:880px;margin:0 auto;padding:30px 18px 80px;}
 
-/* SEARCH */
 .lh-search-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
 .lh-search-wrap{flex:1;min-width:200px;position:relative;}
 .lh-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-soft);pointer-events:none;display:flex;}
@@ -200,7 +195,7 @@ body{
   border:2px solid var(--ink);border-radius:4px;
   font-family:'Archivo', sans-serif;font-size:.88rem;color:var(--ink);background:var(--paper);
   outline:none;
-}
+}     
 .lh-input:focus{ box-shadow:3px 3px 0 var(--mustard); outline:3px solid var(--mustard); outline-offset:2px; }
 .lh-input-error{ border-color:var(--red) !important; box-shadow:3px 3px 0 var(--red) !important; }
 .lh-tab:focus-visible, .lh-apply:focus-visible, .lh-submit:focus-visible, .lh-select:focus-visible { outline:3px solid var(--mustard); outline-offset:2px; }
@@ -216,14 +211,12 @@ body{
 .lh-results-count strong{color:var(--ink);}
 .lh-refresh{background:none;border:none;color:var(--red);font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Archivo',sans-serif;text-transform:uppercase;letter-spacing:.02em;}
 
-/* STATS â€” like stamped receipt */
 .lh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:30px;border:2px solid var(--ink);border-radius:4px;overflow:hidden;}
 .lh-stat{background:var(--paper);padding:16px 10px;text-align:center;border-right:2px solid var(--ink);}
 .lh-stat:last-child{border-right:none;}
 .lh-stat-num{font-family:'Archivo Black', sans-serif;font-size:1.5rem;color:var(--red);line-height:1;}
 .lh-stat-label{font-family:'JetBrains Mono', monospace;font-size:.65rem;color:var(--ink-soft);margin-top:4px;text-transform:uppercase;letter-spacing:.04em;}
 
-/* PINBOARD GRID */
 .lh-jobs{ display:grid; grid-template-columns:1fr; gap:26px; padding-top:6px; }
 @media(min-width:560px){ .lh-jobs{ grid-template-columns:1fr 1fr; } }
 
@@ -275,7 +268,6 @@ body{
 }
 .lh-apply:hover{ background:var(--red); }
 
-/* EMPTY */
 .lh-empty{text-align:center;padding:70px 24px;color:var(--ink-soft);}
 .lh-empty-icon{font-size:2.6rem;margin-bottom:14px;}
 .lh-empty h3{font-family:'Archivo Black',sans-serif;font-size:1.1rem;color:var(--ink);margin-bottom:6px;text-transform:uppercase;}
@@ -286,7 +278,6 @@ body{
 .lh-spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* FORM */
 .lh-form-card{ background:#FFFDF8; border:2px solid var(--ink); padding:30px 26px; box-shadow:5px 5px 0 var(--mustard); }
 .lh-form-head{margin-bottom:24px;}
 .lh-form-head h2{font-family:'Archivo Black',sans-serif;font-size:1.25rem;text-transform:uppercase;margin-bottom:6px;}
@@ -311,7 +302,6 @@ textarea.lh-input{resize:vertical;min-height:100px;line-height:1.6;}
 .lh-submit:hover{background:var(--red-d);}
 .lh-submit:disabled{opacity:.6;cursor:not-allowed;}
 
-/* TOAST */
 .lh-toast{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--ink);color:var(--paper);padding:13px 22px;
@@ -324,13 +314,12 @@ textarea.lh-input{resize:vertical;min-height:100px;line-height:1.6;}
 .lh-toast.show{transform:translateX(-50%) translateY(0);}
 .lh-toast-check{color:var(--mustard);}
 
-/* MODAL */
 .lh-overlay{position:fixed;inset:0;background:rgba(26,22,17,.6);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;}
 .lh-modal{background:#FFFDF8;border:2px solid var(--ink);max-width:540px;width:100%;max-height:90vh;overflow-y:auto;padding:32px;box-shadow:6px 6px 0 var(--red);}
 .lh-modal-close{float:right;background:none;border:2px solid var(--ink);width:30px;height:30px;font-size:1.1rem;cursor:pointer;line-height:1;margin-top:-4px;}
 .lh-modal-title{font-family:'Archivo Black',sans-serif;font-size:1.3rem;text-transform:uppercase;margin-bottom:4px;}
 .lh-modal-company{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--red);margin-bottom:14px;font-weight:600;}
- .lh-modal-meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
+.lh-modal-meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
 .lh-modal-salary{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--ink);margin-bottom:18px;font-weight:700;}
 .lh-modal-desc{font-size:.9rem;color:var(--ink-soft);line-height:1.7;white-space:pre-wrap;}
 .lh-modal-apply{display:block;width:100%;margin-top:24px;padding:14px;background:var(--red);color:var(--paper);border:none;font-family:'Archivo Black',sans-serif;font-size:.9rem;text-transform:uppercase;cursor:pointer;box-shadow:3px 3px 0 var(--ink);}
@@ -344,7 +333,7 @@ textarea.lh-input{resize:vertical;min-height:100px;line-height:1.6;}
 }
 `;
 
-// â”€â”€ components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SearchIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
@@ -354,48 +343,49 @@ function SearchIcon() {
 }
 
 async function saveApplication(jobId, jobTitle, phone) {
-    try {
-        await fetch(`${SUPABASE_URL}/rest/v1/applications`, {
-              method: "POST",
-                    headers: {
-                            apikey: SUPABASE_KEY,
-                                    Authorization: `Bearer ${SUPABASE_KEY}`,
-                                            "Content-Type": "application/json",
-                                                  },
-                                                        body: JSON.stringify({ job_id: jobId, job_title: jobTitle, applicant_phone: phone }),
-                                                            });
-                              } catch (e) {
-                 console.error("Failed to save application", e);
-                   }
-                                                       }
-
-                     function ApplyModal({ job, onClose }) {
-                            const [phone, setPhone] = useState("");
-                     const [error, setError] = useState("");
-
-                    const handleApply = async () => {
-                     if (!/^\+?[0-9\s\-()]{7,}$/.test(phone)) 
-                     setError("Please enter a valid phone number.");
-                      return;
-                      }
-                     await saveApplication(job.id, job.title, phone);
-                     window.open(waLink(job.email, job.title, job.company), "_blank");
-                     onClose();
-                     };
-
-                     return (
-                   <div className="lh-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-                   <div className="lh-modal">
-                   <button className="lh-modal-close" onClick={onClose}>×</button>
-                  <div className="lh-modal-title">Apply to {job.title}</div>
-                  <p style={{margin:"10px 0",color:"var(--ink-soft)",fontSize:".85rem"}}>Enter your WhatsApp number so the employer can reach you.</p>
-                  <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                 {error && <div className="lh-error">{error}</div>      
-                                                                           <button className="lh-modal-apply" onClick={handleApply}>Continue to WhatsApp</button>
-                                                                                                                                                                              </div>
-     </div>
-     )                                                                  }
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/applications`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ job_id: jobId, job_title: jobTitle, applicant_phone: phone }),
+    });
+  } catch (e) {
+    console.error("Failed to save application", e);
+  }
 }
+
+function ApplyModal({ job, onClose }) {
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
+
+  const handleApply = async () => {
+    if (!/^\+?[0-9\s\-()]{7,}$/.test(phone)) {
+      setError("Please enter a valid phone number.");
+      return;
+    }
+    await saveApplication(job.id, job.title, phone);
+    window.open(waLink(job.email, job.title, job.company), "_blank");
+    onClose();
+  };
+
+  return (
+    <div className="lh-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="lh-modal">
+        <button className="lh-modal-close" onClick={onClose}>Ã—</button>
+        <div className="lh-modal-title">Apply to {job.title}</div>
+        <p style={{margin:"10px 0",color:"var(--ink-soft)",fontSize:".85rem"}}>Enter your WhatsApp number so the employer can reach you.</p>
+        <input className="lh-input" type="tel" placeholder="e.g. +234 801 234 5678" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        {error && <div className="lh-error">{error}</div>}
+        <button className="lh-modal-apply" onClick={handleApply}>Continue to WhatsApp</button>
+      </div>
+    </div>
+  );
+}
+
 function waLink(phone, title, company) {
   const digits = (phone || "").replace(/[^0-9]/g, "");
   const msg = encodeURIComponent(`Hi, I'm interested in the ${title} position at ${company}`);
@@ -427,15 +417,14 @@ function JobCard({ job, onOpen, highlight }) {
           <div className="lh-card-date">{timeAgo(job.created_at)}</div>
         </div>
         <button className="lh-apply" onClick={(e) => {
-            e.stopPropagation();
-              onOpen(job, true);
-              }}>Apply</button>
+          e.stopPropagation();
+          onOpen(job, true);
+        }}>Apply</button>
       </div>
     </div>
   );
 }
-
-function JobModal({ job, onClose, onApply }) {}
+function JobModal({ job, onClose, onApply }) {
   if (!job) return null;
   return (
     <div className="lh-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -450,10 +439,9 @@ function JobModal({ job, onClose, onApply }) {}
         {job.salary && <div className="lh-modal-salary">{job.salary}</div>}
         <div className="lh-modal-desc">{job.description}</div>
         <button className="lh-modal-apply" onClick={() => {
-            onClose();
-              onApply(job);
-              }}>Message on WhatsApp</button>
-        }}
+          onClose();
+          onApply(job);
+        }}>Message on WhatsApp</button>
       </div>
     </div>
   );
@@ -471,7 +459,6 @@ function BrowsePanel({ jobs, loading, error, onSwitchToPost, onOpen, highlightId
     const mT = !type || j.type === type;
     return mQ && mC && mT;
   });
-
   const fullTime = jobs.filter((j) => j.type === "Full-time").length;
   const partTime = jobs.filter((j) => j.type === "Part-time").length;
 
@@ -533,40 +520,40 @@ function PostPanel({ onPosted }) {
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const fieldClass = (name) => `lh-input${errorField === name ? " lh-input-error" : ""}`;
   const validate = () => {
-  if (!form.title.trim()) return { msg: "Job title is required.", field: "title" };
-  if (!form.company.trim()) return { msg: "Company name is required.", field: "company" };
-  if (!form.category) return { msg: "Please select a category.", field: "category" };
-  if (!form.type) return { msg: "Please select a job type.", field: "type" };
-  if (!form.email.trim()) return { msg: "WhatsApp number is required.", field: "email" };
-  if (!/^\+?[0-9\s\-()]{7,}$/.test(form.email)) return { msg: "Please enter a valid phone number.", field: "email" };
-  if (!form.description.trim()) return { msg: "Job description is required.", field: "description" };
-  return null;
+    if (!form.title.trim()) return { msg: "Job title is required.", field: "title" };
+    if (!form.company.trim()) return { msg: "Company name is required.", field: "company" };
+    if (!form.category) return { msg: "Please select a category.", field: "category" };
+    if (!form.type) return { msg: "Please select a job type.", field: "type" };
+    if (!form.email.trim()) return { msg: "WhatsApp number is required.", field: "email" };
+    if (!/^\+?[0-9\s\-()]{7,}$/.test(form.email)) return { msg: "Please enter a valid phone number.", field: "email" };
+    if (!form.description.trim()) return { msg: "Job description is required.", field: "description" };
+    return null;
   };
   const handleSubmit = async () => {
     const err = validate();
-     if (err) { setError(err.msg); setErrorField(err.field); return; }
-     setError("");
-     setErrorField("");
-     setLoading(true);
-     try {
-       const job = await db.insertJob({
-         title: form.title.trim(),
-         company: form.company.trim(),
-         category: form.category,
-         type: form.type,
-         salary: form.salary.trim() || null,
-         email: form.email.trim(),
-         description: form.description.trim(),
-         is_new: true,
-       });
-       setForm(blank);
-       onPosted(job);
-     } catch (e) {
-       setError("Failed to post job. Please check your connection and try again.");
-     } finally {
-       setLoading(false);
-     }
-     };
+    if (err) { setError(err.msg); setErrorField(err.field); return; }
+    setError("");
+    setErrorField("");
+    setLoading(true);
+    try {
+      const job = await db.insertJob({
+        title: form.title.trim(),
+        company: form.company.trim(),
+        category: form.category,
+        type: form.type,
+        salary: form.salary.trim() || null,
+        email: form.email.trim(),
+        description: form.description.trim(),
+        is_new: true,
+      });
+      setForm(blank);
+      onPosted(job);
+    } catch (e) {
+      setError("Failed to post job. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="lh-form-card">
@@ -579,7 +566,7 @@ function PostPanel({ onPosted }) {
         <div className="lh-form-grid">
           <div className="lh-field">
             <label className="lh-label">Job title <span>*</span></label>
-            <input className={fieldClass("title")} placeholder="e.g. Barista, Electrician…" value={form.title} onChange={set("title")} />
+            <input className={fieldClass("title")} placeholder="e.g. Barista, Electricianâ€¦" value={form.title} onChange={set("title")} />
           </div>
           <div className="lh-field">
             <label className="lh-label">Company name <span>*</span></label>
@@ -619,7 +606,7 @@ function PostPanel({ onPosted }) {
         <div className="lh-form-section-label">Description</div>
         <div className="lh-field">
           <label className="lh-label">Tell candidates about the role <span>*</span></label>
-          <textarea className={fieldClass("description")} placeholder="Describe responsibilities, requirements, and what makes this a great opportunity…" value={form.description} onChange={set("description")} />
+          <textarea className={fieldClass("description")} placeholder="Describe responsibilities, requirements, and what makes this a great opportunityâ€¦" value={form.description} onChange={set("description")} />
         </div>
       </div>
       {error && <div className="lh-error">{error}</div>}
@@ -630,7 +617,7 @@ function PostPanel({ onPosted }) {
   );
 }
 
-// â”€â”€ app â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€ app â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function App() {
   const [tab, setTab] = useState("browse");
   const [jobs, setJobs] = useState([]);
@@ -678,18 +665,17 @@ export default function App() {
     <>
       <style>{css}</style>
       {isAdmin && (
-          <div style={{background:"#1A1611",color:"#FAF6EE",padding:"20px",fontFamily:"monospace"}}>
-             <h2 style={{color:"#D4A017",marginBottom:"16px"}}>📊 Admin Dashboard</h2>
-             <p>Total Jobs: <strong>{jobs.length}</strong></p>
-             <p>Full-time: <strong>{jobs.filter(j=>j.type==="Full-time").length}</strong></p>
-             <p>Part-time: <strong>{jobs.filter(j=>j.type==="Part-time").length}</strong></p>
-             <p>Posted today: <strong>{jobs.filter(j=>new Date(j.created_at).toDateString()===new Date().toDateString()).length}</strong></p>
-             <hr style={{margin:"16px 0",borderColor:"#4A433A"}}/>
-             <h3 style={{color:"#D4A017",marginBottom:"10px"}}>Recent Listings</h3>
-             {jobs.slice(0,5).map(j=><div key={j.id} style={{marginBottom:"8px",padding:"8px",background:"#2A2218"}}><strong>{j.title}</strong> — {j.company} ({j.type})</div>)}
-          </div>
+        <div style={{background:"#1A1611",color:"#FAF6EE",padding:"20px",fontFamily:"monospace"}}>
+          <h2 style={{color:"#D4A017",marginBottom:"16px"}}>ðŸ“Š Admin Dashboard</h2>
+          <p>Total Jobs: <strong>{jobs.length}</strong></p>
+          <p>Full-time: <strong>{jobs.filter(j=>j.type==="Full-time").length}</strong></p>
+          <p>Part-time: <strong>{jobs.filter(j=>j.type==="Part-time").length}</strong></p>
+          <p>Posted today: <strong>{jobs.filter(j=>new Date(j.created_at).toDateString()===new Date().toDateString()).length}</strong></p>
+          <hr style={{margin:"16px 0",borderColor:"#4A433A"}}/>
+          <h3 style={{color:"#D4A017",marginBottom:"10px"}}>Recent Listings</h3>
+          {jobs.slice(0,5).map(j=><div key={j.id} style={{marginBottom:"8px",padding:"8px",background:"#2A2218"}}><strong>{j.title}</strong> â€” {j.company} ({j.type})</div>)}
+        </div>
       )}
-
       <nav className="lh-nav">
         <div className="lh-logo">Local<span>Hire</span></div>
         <div className="lh-badge">{jobs.length} LIVE</div>
@@ -717,7 +703,7 @@ export default function App() {
         <span>{toast.msg}</span>
       </div>
       {modal && <JobModal job={modal} onClose={() => setModal(null)} onApply={(j) => setApplyJob(j)} />}
-        {applyJob && <ApplyModal job={applyJob} onClose={() => setApplyJob(null)} />}
-      </>
-     );
-  }
+      {applyJob && <ApplyModal job={applyJob} onClose={() => setApplyJob(null)} />}
+    </>
+  );
+}
